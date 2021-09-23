@@ -9,11 +9,21 @@ import filter from "lodash/filter"
 import map from "lodash/map"
 import strip from "strip-ansi"
 import table from "markdown-table"
-import { createCoverageMap, CoverageMapData } from "istanbul-lib-coverage"
+import {
+  createCoverageMap,
+  CoverageMapData,
+  CoverageSummary,
+} from "istanbul-lib-coverage"
 import type { FormattedTestResults } from "@jest/test-result/build/types"
 
 const ACTION_NAME = "jest-github-action"
 const COVERAGE_HEADER = ":loop: **Code coverage**\n\n"
+
+enum CalcSummaryFlag {
+  NO = 0,
+  YES = 1,
+  ONLY = 2,
+}
 
 export async function run() {
   let workingDirectory = core.getInput("working-directory", { required: false })
@@ -45,7 +55,7 @@ export async function run() {
 
     // Coverage comments
     if (getPullId() && shouldCommentCoverage()) {
-      const comment = getCoverageTable(results, CWD)
+      const comment = getCoverageTable(results, CWD, shouldGenerateSummary())
       if (comment) {
         await deletePreviousComments(octokit)
         const commentPayload = getCommentPayload(comment)
@@ -58,7 +68,7 @@ export async function run() {
     }
   } catch (error) {
     console.error(error)
-    core.setFailed(error.message)
+    core.setFailed((error as Error).message)
   }
 }
 
@@ -82,6 +92,22 @@ function shouldCommentCoverage(): boolean {
   return Boolean(JSON.parse(core.getInput("coverage-comment", { required: false })))
 }
 
+function shouldGenerateSummary(): CalcSummaryFlag {
+  const flag = core.getInput("calc-summary", { required: false })
+  switch (flag.toLowerCase()) {
+    case "":
+    case "false":
+      return CalcSummaryFlag.NO
+    case "only":
+      return CalcSummaryFlag.ONLY
+    case "true":
+      return CalcSummaryFlag.YES
+    default:
+      core.warning("Unknown flag")
+      return CalcSummaryFlag.NO
+  }
+}
+
 function shouldRunOnlyChangedFiles(): boolean {
   return Boolean(JSON.parse(core.getInput("changes-only", { required: false })))
 }
@@ -89,10 +115,13 @@ function shouldRunOnlyChangedFiles(): boolean {
 export function getCoverageTable(
   results: FormattedTestResults,
   cwd: string,
+  flag: CalcSummaryFlag,
 ): string | false {
   if (!results.coverageMap) {
     return ""
   }
+  const needSummary = flag !== CalcSummaryFlag.NO
+  const needFiles = flag !== CalcSummaryFlag.ONLY
   const covMap = createCoverageMap((results.coverageMap as unknown) as CoverageMapData)
   const rows = [["Filename", "Statements", "Branches", "Functions", "Lines"]]
 
@@ -100,17 +129,29 @@ export function getCoverageTable(
     console.error("No entries found in coverage data")
     return false
   }
-
+  // not using coverageMap.getCoverageSummary because it will internally merge data in another loop
+  // CoverageSummary will create a blank summary when input is falsy.
+  const covSummary = needSummary ? new CoverageSummary(undefined as any) : undefined
   for (const [filename, data] of Object.entries(covMap.data || {})) {
-    const { data: summary } = data.toSummary()
-    rows.push([
-      filename.replace(cwd, ""),
-      summary.statements.pct + "%",
-      summary.branches.pct + "%",
-      summary.functions.pct + "%",
-      summary.lines.pct + "%",
-    ])
+    const summary = data.toSummary()
+    covSummary && covSummary.merge(summary)
+    needFiles &&
+      rows.push([
+        filename.replace(cwd, ""),
+        summary.data.statements.pct + "%",
+        summary.data.branches.pct + "%",
+        summary.data.functions.pct + "%",
+        summary.data.lines.pct + "%",
+      ])
   }
+  covSummary &&
+    rows.push([
+      "All files",
+      `${covSummary.statements.pct}%`,
+      `${covSummary.branches.pct}%`,
+      `${covSummary.functions.pct}%`,
+      `${covSummary.lines.pct}%`,
+    ])
 
   return COVERAGE_HEADER + table(rows, { align: ["l", "r", "r", "r", "r"] })
 }
@@ -156,7 +197,11 @@ function getJestCommand(resultsFile: string) {
       ? "--changedSince=" + context.payload.pull_request?.base.ref
       : ""
   } --outputFile=${resultsFile}`
-  const shouldAddHyphen = cmd.startsWith("npm") || cmd.startsWith("npx") || cmd.startsWith("pnpm") || cmd.startsWith("pnpx")
+  const shouldAddHyphen =
+    cmd.startsWith("npm") ||
+    cmd.startsWith("npx") ||
+    cmd.startsWith("pnpm") ||
+    cmd.startsWith("pnpx")
   cmd += (shouldAddHyphen ? " -- " : " ") + jestOptions
   core.debug("Final test command: " + cmd)
   return cmd
