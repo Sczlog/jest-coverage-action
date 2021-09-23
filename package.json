@@ -7,7 +7,7 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint --fix src/**/*.ts",
     "build": "tsc",
-    "pack": "ncc build lib/run.js -m",
+    "pack": "ncc build lib/run.js -o dist -m",
     "prepack": "npm run build",
     "failing-test": "jest failing-tests",
     "test": "jest /tests/"
@@ -47,31 +47,26 @@
     "@actions/core": "^1.1.1",
     "@actions/exec": "^1.0.3",
     "@actions/github": "^2.1.1",
+    "global": "^4.4.0",
     "lodash": "^4.17.15",
     "markdown-table": "^2.0.0",
     "strip-ansi": "^6.0.0"
   },
   "devDependencies": {
     "@octokit/types": "^2.11.1",
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.0.5",
     "@types/jest": "^25.2.1",
     "@types/lodash": "^4.14.150",
     "@types/markdown-table": "^2.0.0",
     "@types/node": "^13.13.1",
     "@typescript-eslint/parser": "^2.29.0",
-    "@zeit/ncc": "^0.20.5",
+    "@vercel/ncc": "^0.31.1",
     "eslint": "^6.3.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-jest": "^23.8.2",
     "eslint-plugin-prettier": "^3.1.3",
     "jest": "^25.4.0",
     "prettier": "^2.0.4",
-    "rollup": "^2.57.0",
-    "rollup-plugin-typescript2": "^0.30.0",
     "ts-jest": "^25.4.0",
-    "tslib": "^2.3.1",
-    "typescript": "^4.4.3"
+    "typescript": "^3.8.3"
   }
 }
