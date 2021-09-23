@@ -17,7 +17,7 @@ describe("getCoverageTable()", () => {
 
       | Filename      | Statements | Branches | Functions |  Lines |
       | :------------ | ---------: | -------: | --------: | -----: |
-      | src/action.ts |     19.28% |    1.61% |        0% | 19.75% |"
+      | src/action.ts |     19.27% |    1.61% |        0% | 19.75% |"
     `)
   })
   it("should return a markdown table with summary coverage", () => {
@@ -28,8 +28,8 @@ describe("getCoverageTable()", () => {
 
       | Filename      | Statements | Branches | Functions |  Lines |
       | :------------ | ---------: | -------: | --------: | -----: |
-      | src/action.ts |     19.28% |    1.61% |        0% | 19.75% |
-      | All files     |     19.28% |    1.61% |        0% | 19.75% |"
+      | src/action.ts |     19.27% |    1.61% |        0% | 19.75% |
+      | All files     |     19.27% |    1.61% |        0% | 19.75% |"
     `)
   })
   it("should return a markdown table with only summary coverage", () => {
@@ -40,7 +40,7 @@ describe("getCoverageTable()", () => {
 
       | Filename  | Statements | Branches | Functions |  Lines |
       | :-------- | ---------: | -------: | --------: | -----: |
-      | All files |     19.28% |    1.61% |        0% | 19.75% |"
+      | All files |     19.27% |    1.61% |        0% | 19.75% |"
     `)
   })
 })
