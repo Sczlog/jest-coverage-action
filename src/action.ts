@@ -12,7 +12,7 @@ import table from "markdown-table"
 import {
   createCoverageMap,
   CoverageMapData,
-  CoverageSummary,
+  createCoverageSummary,
 } from "istanbul-lib-coverage"
 import type { FormattedTestResults } from "@jest/test-result/build/types"
 
@@ -130,8 +130,7 @@ export function getCoverageTable(
     return false
   }
   // not using coverageMap.getCoverageSummary because it will internally merge data in another loop
-  // CoverageSummary will create a blank summary when input is falsy.
-  const covSummary = needSummary ? new CoverageSummary(undefined as any) : undefined
+  const covSummary = needSummary ? createCoverageSummary(undefined) : undefined
   for (const [filename, data] of Object.entries(covMap.data || {})) {
     const summary = data.toSummary()
     covSummary && covSummary.merge(summary)
