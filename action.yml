@@ -19,7 +19,7 @@ inputs:
   calc-summary:
     description: :"Calculate coverage summary, set to only will not comment file coverage"
     required: false
-    default: ""
+    default: "false"
   changes-only:
     description: "Only run tests on changed files (over base branch)"
     required: false
