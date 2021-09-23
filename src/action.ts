@@ -13,6 +13,7 @@ import {
   createCoverageMap,
   CoverageMapData,
   createCoverageSummary,
+  FileCoverage,
 } from "istanbul-lib-coverage"
 import type { FormattedTestResults } from "@jest/test-result/build/types"
 
@@ -132,7 +133,7 @@ export function getCoverageTable(
   // not using coverageMap.getCoverageSummary because it will internally merge data in another loop
   const covSummary = needSummary ? createCoverageSummary(undefined) : undefined
   for (const [filename, data] of Object.entries(covMap.data || {})) {
-    const summary = data.toSummary()
+    const summary = (data as FileCoverage).toSummary()
     covSummary && covSummary.merge(summary)
     needFiles &&
       rows.push([
