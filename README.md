@@ -1,6 +1,6 @@
 # Jest Github Action
 
-extended features:
+This repo is a fork of [jest-github-action](https://github.com/mattallty/jest-github-action) with extended features:
 
 - Add a flag `calc-summary` to calculate summary coverage.
   - set to `true`: will calculate both summary coverage and separate files' coverage;
